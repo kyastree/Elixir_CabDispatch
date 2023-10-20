@@ -1,19 +1,23 @@
 defmodule DriverSensor do
   use GenServer
 
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, [])
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, name: Keyword.get(opts, :name))
   end
 
-  def init([]) do
+  def init(opts) do
+    #name = Keyword.get(opts, :name)
+    latitude = Keyword.get(opts, :latitude, 35.6895)
+    longitude = Keyword.get(opts, :longitude, 139.6917)
+    unique_id = Keyword.get(opts, :unique_id, "default")
     emqtt_opts = %{
       host: '192.168.215.2',
       port: 1883,
-      clientid: "driver_sensor",
+      clientid: "driver_sensor_#{unique_id}",
       clean_start: false,
-      name: :emqtt
+      name: :"emqtt_#{unique_id}"
     }
-    interval = 5_000  # Set the interval to 10 seconds (10000 milliseconds)
+    interval = 1_000
     report_topic = "reports/#{emqtt_opts[:clientid]}/location"
     {:ok, pid} = :emqtt.start_link(emqtt_opts)
     st = %{
@@ -21,8 +25,8 @@ defmodule DriverSensor do
       timer: nil,
       report_topic: report_topic,
       pid: pid,
-      latitude: 35.6895, # Starting latitude for Tokyo
-      longitude: 139.6917 # Starting longitude for Tokyo
+      latitude: latitude,
+      longitude: longitude
     }
 
     {:ok, set_timer(st), {:continue, :start_emqtt}}
@@ -73,9 +77,8 @@ end
     new_latitude = lat + (:rand.uniform(2) - 1) * 0.01
     new_longitude = long + (:rand.uniform(2) - 1) * 0.01
 
-    # Adding a timestamp to the payload
-    timestamp = DateTime.utc_now() |> DateTime.to_unix()
-    location = %{latitude: new_latitude, longitude: new_longitude, timestamp: timestamp}
+    timestamp_send = :os.system_time(:millisecond)
+    location = %{latitude: new_latitude, longitude: new_longitude, timestamp_send: timestamp_send}
 
     payload = Jason.encode!(location)
     :emqtt.publish(pid, topic, payload)

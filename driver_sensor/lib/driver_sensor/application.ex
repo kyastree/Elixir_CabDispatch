@@ -1,21 +1,27 @@
 defmodule DriverSensor.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
-
   use Application
 
-  @impl true
   def start(_type, _args) do
-    children = [
-      # Starts a worker by calling: DriverSensor.Worker.start_link(arg)
-      # {DriverSensor.Worker, arg}
-      DriverSensor,
-    ]
+    children = for driver_id <- 1..15 do
+      {lat, long} = generate_random_coordinates()
+      Supervisor.child_spec({DriverSensor, [unique_id: driver_id, latitude: lat, longitude: long, name: :"DriverSensor_#{driver_id}"]}, id: :"DriverSensor_#{driver_id}")
+    end
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: DriverSensor.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp generate_random_coordinates do
+    # You can modify these values based on the desired starting locations
+    lat_min = 35.0  # Minimum latitude
+    lat_max = 36.0  # Maximum latitude
+
+    long_min = 139.0  # Minimum longitude
+    long_max = 140.0  # Maximum longitude
+
+    lat = lat_min + :rand.uniform() * (lat_max - lat_min)
+    long = long_min + :rand.uniform() * (long_max - long_min)
+
+    {lat, long}
   end
 end
