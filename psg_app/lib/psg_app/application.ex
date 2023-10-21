@@ -17,9 +17,10 @@ defmodule PsgApp.Application do
       # Start Finch
       {Finch, name: PsgApp.Finch},
       # Start the Endpoint (http/https)
-      PsgAppWeb.Endpoint
+      PsgAppWeb.Endpoint,
       # Start a worker by calling: PsgApp.Worker.start_link(arg)
       # {PsgApp.Worker, arg}
+      PsgAppWeb.LatencyLogger,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

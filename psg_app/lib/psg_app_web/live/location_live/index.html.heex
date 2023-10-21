@@ -1,3 +1,45 @@
+<%= if @error_message do %>
+  <div class="error-message">
+    <%= @error_message %>
+  </div>
+<% end %>
+
+<form phx-submit="request_taxi">
+  <label for="latitude">Latitude:</label>
+  <input type="text" name="latitude" phx-model="latitude" />
+  
+  <label for="longitude">Longitude:</label>
+  <input type="text" name="longitude" phx-model="longitude" />
+  
+  <button type="submit">Request Taxi</button>
+</form>
+
+<!-- 显示最近的司机 -->
+<%= if @nearest_driver do %>
+  <h3>Nearest Driver</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Driver ID</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Timestamp</th>
+        <th>Latency(milliseconds)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><%= @nearest_driver["client_id"] %></td>
+        <td><%= @nearest_driver["latitude"] %></td>
+        <td><%= @nearest_driver["longitude"] %></td>
+        <td><%= @nearest_driver["timestamp"] %></td>
+        <td><%= @nearest_driver["latency"] %></td>
+      </tr>
+    </tbody>
+  </table>
+<% end %>
+
+
 <table>
   <thead>
     <tr>

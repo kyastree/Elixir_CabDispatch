@@ -17,7 +17,7 @@ defmodule DriverSensor do
       clean_start: false,
       name: :"emqtt_#{unique_id}"
     }
-    interval = 1_000
+    interval = 20_000
     report_topic = "reports/#{emqtt_opts[:clientid]}/location"
     {:ok, pid} = :emqtt.start_link(emqtt_opts)
     st = %{

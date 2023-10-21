@@ -53,6 +53,7 @@ defmodule PsgApp.MixProject do
       {:emqtt, github: "emqx/emqtt", tag: "1.8.6", system_env: [{"BUILD_WITHOUT_QUIC", "1"}]},
       {:cowlib, "2.12.1", override: true},
       #{:live_map, "~> 0.0.1"},
+      {:haversine, "~> 0.1.0"},
     ]
   end
 
