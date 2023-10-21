@@ -37,11 +37,16 @@ defmodule PsgAppWeb.LocationLive.Index do
 
   @impl true
   def handle_event("request_taxi", %{"latitude" => lat, "longitude" => long}, socket) do
+    start_time = :os.system_time(:millisecond)
+
     latitude = String.to_float(lat)
     longitude = String.to_float(long)
 
     if valid_coordinates?(latitude, longitude) do
       nearest_driver = find_nearest_driver(latitude, longitude, socket.assigns.locations)
+      end_time = :os.system_time(:millisecond)
+    latency = end_time - start_time
+    IO.puts("Finding nearest driver latency: #{latency} milliseconds")
 
       IO.puts("Nearest driver: #{inspect(nearest_driver)}")
 

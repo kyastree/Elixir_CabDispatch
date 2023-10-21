@@ -2,7 +2,7 @@ defmodule DriverSensor.Application do
   use Application
 
   def start(_type, _args) do
-    children = for driver_id <- 1..5 do
+    children = for driver_id <- 1..25 do
       {lat, long} = generate_random_coordinates()
       Supervisor.child_spec({DriverSensor, [unique_id: driver_id, latitude: lat, longitude: long, name: :"DriverSensor_#{driver_id}"]}, id: :"DriverSensor_#{driver_id}")
     end
