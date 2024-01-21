@@ -7,10 +7,9 @@ defmodule PsgAppWeb.LocationLive.Index do
     emqtt_opts = Application.get_env(:psg_app, :emqtt)
     {:ok, pid} = :emqtt.start_link(emqtt_opts)
     {:ok, _} = :emqtt.connect(pid)
-
     # 订阅相关主题
     {:ok, _, _} = :emqtt.subscribe(pid, "reports/#")
-
+ #   {:ok, _pid} = PsgAppWeb.LocationLive.LocationManager.start_link([])
     {:ok, assign(socket, locations: locations, pid: pid, nearest_driver: nil, error_message: nil)}
   end
 
@@ -26,7 +25,8 @@ defmodule PsgAppWeb.LocationLive.Index do
     location = Jason.decode!(payload)
     latency = timestamp_receive - location["timestamp_send"]
     IO.puts("Latency: #{latency} milliseconds")
-    PsgAppWeb.LatencyLogger.log(latency)
+    PsgAppWeb.LatencyLogger.log(latency, timestamp_receive)
+
 
     location = Map.put(location, "client_id", clientid)
     location = Map.put(location, "latency", latency)
@@ -44,9 +44,11 @@ defmodule PsgAppWeb.LocationLive.Index do
 
     if valid_coordinates?(latitude, longitude) do
       nearest_driver = find_nearest_driver(latitude, longitude, socket.assigns.locations)
+      # 更新 GenServer 状态
+      GenServer.cast(PsgAppWeb.LocationLive.LocationManager, {:update_nearest_driver, nearest_driver})
       end_time = :os.system_time(:millisecond)
-    latency = end_time - start_time
-    IO.puts("Finding nearest driver latency: #{latency} milliseconds")
+      latency = end_time - start_time
+      IO.puts("Finding nearest driver latency: #{latency} milliseconds")
 
       IO.puts("Nearest driver: #{inspect(nearest_driver)}")
 
@@ -71,9 +73,12 @@ defmodule PsgAppWeb.LocationLive.Index do
   end
 
   defp valid_coordinates?(latitude, longitude) do
-    latitude >= -90 and latitude <= 90 and
-      longitude >= -180 and longitude <= 180
+    is_valid = latitude >= -90 and latitude <= 90 and
+               longitude >= -180 and longitude <= 180
+    IO.puts("Validating coordinates: #{latitude}, #{longitude} - Result: #{is_valid}")
+    is_valid
   end
+
 
 
 

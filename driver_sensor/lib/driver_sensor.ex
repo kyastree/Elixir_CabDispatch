@@ -51,6 +51,22 @@ end
     handle_publish(parse_topic(publish), publish, st)
   end
 
+  def handle_info(:check_connection, state) do
+    case :emqtt.publish(state.pid, "test/topic", "test") do
+      :ok ->
+        # 连接正常
+        Process.send_after(self(), :check_connection, 5_000)
+      _ ->
+        # 对于任何其他情况，尝试重新连接
+        {:ok, _} = :emqtt.connect(state.pid)
+        :emqtt.subscribe(state.pid, "reports/#")
+    end
+    {:noreply, state}
+  end
+
+# 18:21:12.824 [notice] Application driver_sensor exited: shutdown
+
+
   defp handle_publish(["commands", _, "set_interval"], %{payload: payload}, st) do
     new_st = %{st | interval: String.to_integer(payload)}
     {:noreply, set_timer(new_st)}
@@ -69,8 +85,11 @@ end
       Process.cancel_timer(st.timer)
     end
     timer = Process.send_after(self(), :tick, st.interval)
+    # 设置检查连接状态的定时器
+    Process.send_after(self(), :check_connection, 5_000) # 每5秒检查一次
     %{st | timer: timer}
   end
+
 
   defp report_location(%{pid: pid, report_topic: topic, latitude: lat, longitude: long} = state) do
     # Random walk logic: adding a small random offset to latitude and longitude

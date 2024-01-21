@@ -21,6 +21,7 @@ defmodule PsgApp.Application do
       # Start a worker by calling: PsgApp.Worker.start_link(arg)
       # {PsgApp.Worker, arg}
       PsgAppWeb.LatencyLogger,
+      PsgAppWeb.LocationLive.LocationManager,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
