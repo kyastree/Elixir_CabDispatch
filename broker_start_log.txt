@@ -1,5 +1,0 @@
-EMQX Broker started at Tue Jan  9 15:55:35 JST 2024
-EMQX Broker started at 1704807975
-EMQX Broker started at 1704808314
-EMQX Broker started at 1704878055
-EMQX Broker started at 1704878483
